@@ -21,24 +21,40 @@ public class Philosopher
     }
 
     @Override
-    public void run() {
+   public void run() {
         while (running) {
             try {
                 think();
-                myLeftStick.take();
-                // think(); // Pour augmenter la probabilité d'interblocage
-                myRightStick.take();
+
+                int philosopherId = (int) getId(); // Identifiant unique du philosophe
+
+                // Essayez de prendre le bâton de gauche
+                if (philosopherId % 2 == 0) {
+                    myLeftStick.take();
+                    myRightStick.take();
+                } else { // Essayez de prendre le bâton de droite
+                    myRightStick.take();
+                    myLeftStick.take();
+                }
+
                 // success : process
-                eat();
-                // release resources
-                myLeftStick.release();
-                myRightStick.release();
-                // try again
+                try {
+                    eat();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    // Release resources
+                    myLeftStick.release();
+                    myRightStick.release();
+                }
+
+                // Try again
             } catch (InterruptedException ex) {
                 Logger.getLogger("Table").log(Level.SEVERE, "{0} Interrupted", this.getName());
             }
         }
     }
+
 
     // Permet d'interrompre le philosophe "proprement" :
     // Il relachera ses baguettes avant de s'arrêter
